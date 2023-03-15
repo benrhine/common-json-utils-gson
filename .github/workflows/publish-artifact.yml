@@ -76,7 +76,7 @@ jobs:
           #        SLACK_CHANNEL: general
           SLACK_COLOR: ${{ job.status }} # or a specific color like 'good' or '#ff00ff'
           SLACK_ICON: https://github.com/rtCamp.png?size=48
-          SLACK_MESSAGE: You may now include | com.benrhine:common-json-utils-jackson:${{ env.app_version }}
+          SLACK_MESSAGE: You may now include | com.benrhine:common-json-utils-gson:${{ env.app_version }}
           SLACK_TITLE: New ARTIFACT available
           SLACK_USERNAME: RhineConsulting
           SLACK_WEBHOOK: ${{ secrets.SLACK_WEBHOOK }}
@@ -91,7 +91,7 @@ jobs:
           #        SLACK_CHANNEL: general
           SLACK_COLOR: ${{ job.status }} # or a specific color like 'good' or '#ff00ff'
           SLACK_ICON: https://github.com/rtCamp.png?size=48
-          SLACK_MESSAGE: Failed to build | com.benrhine:common-json-utils-jackson:${{ env.app_version }}
+          SLACK_MESSAGE: Failed to build | com.benrhine:common-json-utils-gson:${{ env.app_version }}
           SLACK_TITLE: FAILED TO BUILD ARTIFACT
           SLACK_USERNAME: RhineConsulting
           SLACK_WEBHOOK: ${{ secrets.SLACK_WEBHOOK }}
