@@ -1,0 +1,280 @@
+import java.util.concurrent.TimeUnit
+
+import static java.lang.Boolean.parseBoolean
+/** --------------------------------------------------------------------------------------------------------------------
+ * Plugins:
+ * ------------------------------------------------------------------------------------------------------------------ */
+plugins {
+	// Which Plugin                                         What Version                                Plugin Notes
+	id 'idea'																							// https://docs.gradle.org/current/userguide/idea_plugin.html
+	id "jacoco"                                                                                         // https://docs.gradle.org/current/userguide/jacoco_plugin.html
+	id 'java-library'																					// https://docs.gradle.org/current/userguide/java_library_plugin.html
+	id 'maven-publish'																					// https://docs.gradle.org/current/userguide/publishing_maven.html
+	id "checkstyle"                                                                                     // https://docs.gradle.org/current/userguide/checkstyle_plugin.html
+	id "pmd"                                                                                            // https://docs.gradle.org/current/userguide/pmd_plugin.html
+	id "com.adarshr.test-logger"                            version "$testLoggerPlugin"                 // https://plugins.gradle.org/plugin/com.adarshr.test-logger
+	// id "se.bjurr.gitchangelog.git-changelog-gradle-plugin"  version "$gitChangelogPlugin"               // https://plugins.gradle.org/plugin/se.bjurr.gitchangelog.git-changelog-gradle-plugin
+	// id "org.sonarqube"                                      version "$sonarQubePlugin"
+
+}
+
+/** --------------------------------------------------------------------------------------------------------------------
+ * Project Settings: (Variables from gradle.properties)
+ * ------------------------------------------------------------------------------------------------------------------ */
+// Name                                     // Primary Config                       // Default Value
+ext.allowEnvOverride                        = parseBoolean((String) System.env.ENV_OVERRIDE_ENABLED) ?: parseBoolean("$buildAllowENVOverride")
+ext.vcsUser                                 = System.env.GITHUB_ACTOR         // DO NOT PUT IN PROPERTIES FILE
+ext.vcsPass                                 = System.env.GITHUB_TOKEN   // DO NOT PUT IN PROPERTIES FILE
+ext.env                                     = System.env.ENV ?: "dev"
+ext.nrEnv                                   = env.toUpperCase().replaceAll("-", " ")
+//ext.bbBranch                                = System.env.VCS_BRANCH           // ONLY FOR DEPLOYMENTS
+//ext.bbUserUuid                              = System.env.VCS_STEP_TRIGGERER_UUID
+//ext.bbBuildNum                              = System.env.VCS_BUILD_NUMBER     // ONLY FOR DEPLOYMENTS
+ext.whichTestSet                            = System.env.TEST_STEP
+ext.slackToken                              = System.env.SLACK_TOKEN
+ext.slackNotificationMainChannel            = System.env.SLACK_BUILDS_CHANNEL_ID
+ext.slackNotificationChannel                = System.env.SLACK_BUILDS_CHANNEL_NAME
+ext.buildSlackURL                           = System.env.SLACK_HOOK_URL
+
+//ext.gradleIcon                              = "$slackGradleIconUrl"
+
+if (ext.allowEnvOverride) {
+	// Allow for these variables to be overridden by env variables if desired but have a fallback to a reasonable default
+	ext.jacocoEnabled                       = parseBoolean((String) System.env.EXAMPLE_JACOCO_ENABLED)        ?: parseBoolean("$jacocoPluginEnabled")
+	ext.htmlReportsEnabled                  = parseBoolean((String) System.env.EXAMPLE_HTML_REPORTS_ENABLED)  ?: parseBoolean("$testHtmlReportsEnabled")
+	ext.checkstyleIgnoreFail                = parseBoolean((String) System.env.EXAMPLE_CHECKSTYLE_IGNORE_FAILURES)  ?: parseBoolean("$checkstyleIgnoreFailures")
+	ext.checkstyleXml                       = parseBoolean((String) System.env.EXAMPLE_CHECKSTYLE_XML_REPORT)       ?: parseBoolean("$checkstyleXmlReportEnabled")
+	ext.checkstyleHtml                      = parseBoolean((String) System.env.EXAMPLE_CHECKSTYLE_HTML_REPORT)      ?: parseBoolean("$checkstyleHtmlReportEnabled")
+	ext.pmdIgnoreFail                       = parseBoolean((String) System.env.EXAMPLE_PMD_IGNORE_FAILURES)         ?: parseBoolean("$pmdIgnoreFailures")
+	ext.pmdXml                              = parseBoolean((String) System.env.EXAMPLE_PMD_XML_REPORT)              ?: parseBoolean("$pmdXmlReportEnabled")
+	ext.pmdHtml                             = parseBoolean((String) System.env.EXAMPLE_PMD_HTML_REPORT)             ?: parseBoolean("$pmdHtmlReportEnabled")
+} else {
+	ext.jacocoEnabled                       = parseBoolean("$jacocoPluginEnabled")
+	ext.htmlReportsEnabled                  = parseBoolean("$testHtmlReportsEnabled")
+	ext.checkstyleIgnoreFail                = parseBoolean("$checkstyleIgnoreFailures")
+	ext.checkstyleXml                       = parseBoolean("$checkstyleXmlReportEnabled")
+	ext.checkstyleHtml                      = parseBoolean("$checkstyleHtmlReportEnabled")
+	ext.pmdIgnoreFail                       = parseBoolean("$pmdIgnoreFailures")
+	ext.pmdXml                              = parseBoolean("$pmdXmlReportEnabled")
+	ext.pmdHtml                             = parseBoolean("$pmdHtmlReportEnabled")
+}
+
+ext.unitTestBuildColor = ""
+ext.intTestBuildColor = ""
+// Define containers to hold test result summaries
+ext.testsUnitResults = []                                               // Container for unit tests summaries
+ext.testsAdminIntResults  = []                                          // Container for int tests summaries
+ext.testsFlowableIntResults  = []                                       // Container for int tests summaries
+ext.testsIntResults  = []                                               // Container for int tests summaries
+ext.testsThinResults = []                                               // Container for thin tests summaries
+ext.testsLoadResults = []                                               // Container for load tests summaries
+
+println "@@@@@@@@@@@@@@ BUILDING EXAMPLE @@@@@@@@@@@@@\n"
+
+apply from: "step-000-versioning.gradle"
+/** --------------------------------------------------------------------------------------------------------------------
+ * Repository Config: Configuration for external maven and nexus repositories the application is looking for.
+ * - requires a bit bucket username and password
+ * ------------------------------------------------------------------------------------------------------------------ */
+apply from: "step-001-repository-config.gradle"
+
+println "\n********* APPLICATION OVERRIDES *********\n"
+
+if (allowEnvOverride) {
+	println "Application settings ENV override enabled. Trying to load application properties from the environment " +
+			"before falling back to gradle.properties by default"
+	println "Use this feature if you want to override application versioning, testing, or reporting defaults."
+	println "Please see the README for more details"
+} else {
+	println "Application settings defaulted from gradle.properties values"
+	println "To override application defaults from the environment set an environment variable named " +
+			"ENV_OVERRIDE_ENABLED to TRUE"
+	println "Setting ENV_OVERRIDE_ENABLED=TRUE will allow the app to pick up other specified ENV's that may be " +
+			"configured for various purposes."
+	println "Please see the README for more details"
+}
+/** --------------------------------------------------------------------------------------------------------------------
+ * Application Config: Configuration for the following ...
+ * - application - mainClass path
+ * - springBoot - add the build and git info to the actuator endpoints
+ * - bootRun
+ * ------------------------------------------------------------------------------------------------------------------ */
+apply from: 'step-005-application-config.gradle'
+
+// Print the current git branch
+getCurrentGitBranch()
+// Print the current git hash
+getCurrentGitCommit()
+
+/** --------------------------------------------------------------------------------------------------------------------
+ * Additional Code Sources and Config: Configuration of additional source sets and global excludes.
+ * This enables the project to run component/API tests external to the initial build to enable full API testing on the
+ * pipeline build.
+ * ------------------------------------------------------------------------------------------------------------------ */
+apply from: 'step-010-additional-config.gradle'
+/** --------------------------------------------------------------------------------------------------------------------
+ * Additional Tasks: This import needs to be before anything that that may call tasks defined here.
+ * ------------------------------------------------------------------------------------------------------------------ */
+apply from: 'step-015-additional-tasks.gradle'
+/** --------------------------------------------------------------------------------------------------------------------
+ * JaCoCo: Configuration for JaCoCo with additional reporting tasks.
+ * ------------------------------------------------------------------------------------------------------------------ */
+apply from: 'step-025-jacoco-config.gradle'
+/** --------------------------------------------------------------------------------------------------------------------
+ * Static Analysis Config: Configuration of checkstyle and pmd.
+ * Note: Findbugs project is no longer supported, there is a successor SpotBugs that may be worth looking at
+ * https://spotbugs.readthedocs.io/en/latest/gradle.html
+ * ------------------------------------------------------------------------------------------------------------------ */
+apply from: 'step-030-checkstyle-config.gradle'
+apply from: 'step-035-pmd-config.gradle'
+/** --------------------------------------------------------------------------------------------------------------------
+ * Dependencies: Configuration for dependencyManagement and dependency blocks.
+ * ------------------------------------------------------------------------------------------------------------------ */
+apply from: 'step-040-dependencies.gradle'
+/** --------------------------------------------------------------------------------------------------------------------
+ * gitChangelogTask:
+ *
+ * Build a nice changelog of all the git commits so its easy to see what has been done for a release. If we are building
+ * the main branch a single changelog will be created (this may need to be updated as we determine what branch will be
+ * our release branch). If the changelog task is run from a branch it will create the changelog in the `branch-changelog`
+ * directory with the branch name and the timestamp for clarity.
+ *
+ * Note: The template may need some basic tweaks as we develop
+ * `./gradlew gitChangelogTask`
+ * ------------------------------------------------------------------------------------------------------------------ */
+//task gitChangelogTask(type: GitChangelogTask) {
+//	println "\n*** GENERATING APPLICATION CHANGELOG ***\n"
+//	final timestamp = getDate()
+//	fromRepo = file("$projectDir")
+//	toRef = getCurrentGitBranch()
+//
+//	if (toRef == "$gitReleaseBranchName" as String) {
+//		file = new File("${changelogDefaultFileName}.md")
+//	} else {
+//		deleteFilesOlderThanNDays(parseInt("$changelogBranchLogTTLDays"), "$changelogBranchLogLocation")
+//		file = new File("${changelogBranchLogLocation}/${changelogDefaultFileName}-${toRef}-${timestamp}.md")
+//	}
+//	templateContent = """
+//{{#tags}}
+//## {{name}}
+// {{#issues}}
+//  {{#hasIssue}}
+//   {{#hasLink}}
+//### {{name}} [{{issue}}]({{link}}) {{title}} {{#hasIssueType}} *{{issueType}}* {{/hasIssueType}} {{#hasLabels}} {{#labels}} *{{.}}* {{/labels}} {{/hasLabels}}
+//   {{/hasLink}}
+//   {{^hasLink}}
+//### {{name}} {{issue}} {{title}} {{#hasIssueType}} *{{issueType}}* {{/hasIssueType}} {{#hasLabels}} {{#labels}} *{{.}}* {{/labels}} {{/hasLabels}}
+//   {{/hasLink}}
+//  {{/hasIssue}}
+//  {{^hasIssue}}
+//### {{name}}
+//  {{/hasIssue}}
+//
+//  {{#commits}}
+//**{{{messageTitle}}}**
+//
+//{{#messageBodyItems}}
+// * {{.}}
+//{{/messageBodyItems}}
+//
+//[{{hash}}](https://bitbucket.org/{{ownerName}}/{{repoName}}/commit/{{hash}}) {{authorName}} *{{commitTime}}*
+//
+//  {{/commits}}
+//
+// {{/issues}}
+//{{/tags}}
+// """
+//}
+
+/** --------------------------------------------------------------------------------------------------------------------
+ * Test Configuration: Configuration for unit, int, thin, load tests
+ * ------------------------------------------------------------------------------------------------------------------ */
+apply from: 'step-045-test-config.gradle'
+/** --------------------------------------------------------------------------------------------------------------------
+ * Publish: Modern way to publish artifacts using the maven-publish plugin (Gradle 7+)
+ *
+ * Currently ./gradlew publish will publish a usable artifact to the local build folder. Once published the artifact
+ * will need to be copied over to the libraries project and pushed to the repository MANUALLY for use. It should
+ * be possible to automatically publish the artifact (see commented out repo block) but currently that configuration
+ * fails due to an xml parse error.
+ *
+ * https://www.jetbrains.com/help/idea/add-a-gradle-library-to-the-maven-repository.html#publish_remote
+ *
+ * ------------------------------------------------------------------------------------------------------------------ */
+publishing {
+	repositories {
+		maven {
+			name = "GitHubPackages"
+			url = uri("https://maven.pkg.github.com/benrhine/libraries")
+			credentials {
+				username = "$vcsUser"
+				password = "$vcsPass"
+			}
+		}
+	}
+	publications {
+		gpr(MavenPublication) {
+			from(components.java)
+		}
+	}
+}
+/** --------------------------------------------------------------------------------------------------------------------
+ * Helper Functions:
+ *
+ * ------------------------------------------------------------------------------------------------------------------ */
+static final String getDate() {
+	return new Date().format('yyyyMMddHHmmss')
+}
+
+final getCurrentGitCommit() {
+	def commitHash = "Unknown hash"
+	try {
+		def workingDir = new File("${project.projectDir}")
+		def result = 'git rev-parse HEAD'.execute(null, workingDir)
+		result.waitFor()
+		if (result.exitValue() == 0) {
+			commitHash = result.text.trim()
+		}
+	} catch (e) {
+		println e.message
+	}
+	println "Current Git hash: " + commitHash
+}
+
+final getCurrentGitBranch() {
+	def gitBranch = "Unknown branch"
+	try {
+		def workingDir = new File("${project.projectDir}")
+		def result = 'git rev-parse --abbrev-ref HEAD'.execute(null, workingDir)
+		result.waitFor()
+		if (result.exitValue() == 0) {
+			gitBranch = result.text.trim()
+		}
+	} catch (e) {
+		println e.message
+	}
+	println "Current Git Branch: " + gitBranch
+	return gitBranch
+}
+
+static final void deleteFilesOlderThanNDays(int expirationPeriod, String dirPath) {
+	File targetDir = new File(dirPath)
+	if (!targetDir.exists()) {
+		throw new RuntimeException(String.format("Log files directory '%s' does not exist in the environment", dirPath))
+	}
+
+	File[] files = targetDir.listFiles()
+	for (File file : files) {
+		long diff = new Date().getTime() - file.lastModified()
+		println "DIFF: " + diff
+
+		// Granularity = DAYS;
+		long desiredLifespan = TimeUnit.DAYS.toMillis(expirationPeriod)
+		println "desiredLifespan: " + desiredLifespan
+		println file.getName()
+
+		if ((diff > desiredLifespan) && (!file.getName().equalsIgnoreCase("README.md"))){
+			file.delete()
+		}
+	}
+}
