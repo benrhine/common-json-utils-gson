@@ -33,9 +33,9 @@ jobs:
 
     steps:
       - uses: actions/checkout@v3
-      - name: Set Gradle Version
-        shell: bash
-        run: ./gradlew wrapper --gradle-version=${{ inputs.gradle-version }}
+#      - name: Set Gradle Version
+#        shell: bash
+#        run: ./gradlew wrapper --gradle-version=${{ inputs.gradle-version }}
       - name: Verify Gradle Version Set
         shell: bash
         run: ./gradlew -v
