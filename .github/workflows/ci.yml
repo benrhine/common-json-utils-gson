@@ -21,11 +21,15 @@ jobs:
     strategy:
       matrix:
         os: [ ubuntu-latest ]
-        gradle-version: [ "7.6", "7.6.1" ]
+        java-version: [ "17", "18", "19" ]                        # ONLY TAKES MAJOR VERSION
+        jdk-publisher: [ "corretto" ]
+        gradle-version: [ "7.5.1", "7.6", "7.6.1", "8.0", "8.0.1", "8.0.2" ] # Do not work with java 19 - "7.4", "7.4.1", "7.5",
       fail-fast: false
-    uses: benrhine/common-json-utils-jackson/.github/workflows/setup-gradle-environment.yml@main
+    uses: ./.github/workflows/setup-gradle-environment.yml        # Starting with the ./. means it is a local reusable workflow
     with:
       os: ${{ matrix.os }}
+      java-version: ${{ matrix.java-version }}
+      jdk-publisher: ${{ matrix.jdk-publisher }}
       gradle-version: ${{ matrix.gradle-version }}
 
   ubuntu-unit-test-gradle-environment:
@@ -33,11 +37,15 @@ jobs:
     strategy:
       matrix:
         os: [ ubuntu-latest ]
-        gradle-version: [ "7.6", "7.6.1" ]
+        java-version: [ "17", "18", "19" ]                        # ONLY TAKES MAJOR VERSION
+        jdk-publisher: [ "corretto" ]
+        gradle-version: [ "7.5.1", "7.6", "7.6.1", "8.0", "8.0.1", "8.0.2" ] # Do not work with java 19 - "7.4", "7.4.1", "7.5",
       fail-fast: false
-    uses: benrhine/common-json-utils-jackson/.github/workflows/unit-test.yml@main
+    uses: ./.github/workflows/unit-test.yml                       # Starting with the ./. means it is a local reusable workflow
     with:
       os: ${{ matrix.os }}
+      java-version: ${{ matrix.java-version }}
+      jdk-publisher: ${{ matrix.jdk-publisher }}
       gradle-version: ${{ matrix.gradle-version }}
 
   ubuntu-int-test-gradle-environment:
@@ -45,11 +53,15 @@ jobs:
     strategy:
       matrix:
         os: [ ubuntu-latest ]
-        gradle-version: [ "7.6", "7.6.1" ]
+        java-version: [ "17", "18", "19" ]                        # ONLY TAKES MAJOR VERSION
+        jdk-publisher: [ "corretto" ]
+        gradle-version: [ "7.5.1", "7.6", "7.6.1", "8.0", "8.0.1", "8.0.2" ] # Do not work with java 19 - "7.4", "7.4.1", "7.5",
       fail-fast: false
-    uses: benrhine/common-json-utils-jackson/.github/workflows/int-test.yml@main
+    uses: ./.github/workflows/int-test.yml                        # Starting with the ./. means it is a local reusable workflow
     with:
       os: ${{ matrix.os }}
+      java-version: ${{ matrix.java-version }}
+      jdk-publisher: ${{ matrix.jdk-publisher }}
       gradle-version: ${{ matrix.gradle-version }}
 
   ubuntu-checkstyle-gradle-environment:
@@ -57,11 +69,15 @@ jobs:
     strategy:
       matrix:
         os: [ ubuntu-latest ]
-        gradle-version: [ "7.6", "7.6.1" ]
+        java-version: [ "17"]                                     # ONLY TAKES MAJOR VERSION
+        jdk-publisher: [ "corretto" ]
+        gradle-version: [ "7.6.1" ]
       fail-fast: false
-    uses: benrhine/common-json-utils-jackson/.github/workflows/checkstyle.yml@main
+    uses: ./.github/workflows/checkstyle.yml                      # Starting with the ./. means it is a local reusable workflow
     with:
       os: ${{ matrix.os }}
+      java-version: ${{ matrix.java-version }}
+      jdk-publisher: ${{ matrix.jdk-publisher }}
       gradle-version: ${{ matrix.gradle-version }}
 
   ubuntu-pmd-gradle-environment:
@@ -69,35 +85,47 @@ jobs:
     strategy:
       matrix:
         os: [ ubuntu-latest ]
-        gradle-version: [ "7.6", "7.6.1" ]
+        java-version: [ "17"]                                     # ONLY TAKES MAJOR VERSION
+        jdk-publisher: [ "corretto" ]
+        gradle-version: [ "7.6.1" ]
       fail-fast: false
-    uses: benrhine/common-json-utils-jackson/.github/workflows/pmd.yml@main
+    uses: ./.github/workflows/pmd.yml                             # Starting with the ./. means it is a local reusable workflow
     with:
       os: ${{ matrix.os }}
+      java-version: ${{ matrix.java-version }}
+      jdk-publisher: ${{ matrix.jdk-publisher }}
       gradle-version: ${{ matrix.gradle-version }}
 
-  windows-setup-gradle-environment:
-    if: github.event.pull_request.draft == false
-    strategy:
-      matrix:
-        os: [ windows-latest ]
-        gradle-version: [ "7.6", "7.6.1" ]
-      fail-fast: false
-    uses: benrhine/common-json-utils-jackson/.github/workflows/setup-gradle-environment.yml@main
-    with:
-      os: ${{ matrix.os }}
-      gradle-version: ${{ matrix.gradle-version }}
-
+#  windows-setup-gradle-environment:
+#    if: github.event.pull_request.draft == false
+#    strategy:
+#      matrix:
+#        os: [ windows-latest ]
+#        java-version: [ "17", "18", "19" ]                        # ONLY TAKES MAJOR VERSION
+#        jdk-publisher: [ "corretto" ]
+#        gradle-version: [ "7.5.1", "7.6", "7.6.1", "8.0", "8.0.1", "8.0.2" ] # Do not work with java 19 - "7.4", "7.4.1", "7.5",
+#      fail-fast: false
+#    uses: ./.github/workflows/setup-gradle-environment.yml
+#    with:
+#      os: ${{ matrix.os }}
+#      java-version: ${{ matrix.java-version }}
+#      jdk-publisher: ${{ matrix.jdk-publisher }}
+#      gradle-version: ${{ matrix.gradle-version }}
+#
 #  windows-unit-test-gradle-environment:
 #    needs: windows-setup-gradle-environment
 #    strategy:
 #      matrix:
 #        os: [ windows-latest ]
-#        gradle-version: [ "7.6", "7.6.1" ]
+#        java-version: [ "17", "18", "19" ]                        # ONLY TAKES MAJOR VERSION
+#        jdk-publisher: [ "corretto" ]
+#        gradle-version: [ "7.5.1", "7.6", "7.6.1", "8.0", "8.0.1", "8.0.2" ] # Do not work with java 19 - "7.4", "7.4.1", "7.5",
 #      fail-fast: false
-#    uses: benrhine/common-json-utils-jackson/.github/workflows/unit-test.yml@main
+#    uses: ./.github/workflows/unit-test.yml
 #    with:
 #      os: ${{ matrix.os }}
+#      java-version: ${{ matrix.java-version }}
+#      jdk-publisher: ${{ matrix.jdk-publisher }}
 #      gradle-version: ${{ matrix.gradle-version }}
 #
 #  windows-int-test-gradle-environment:
@@ -105,35 +133,47 @@ jobs:
 #    strategy:
 #      matrix:
 #        os: [ windows-latest ]
-#        gradle-version: [ "7.6", "7.6.1" ]
+#        java-version: [ "17", "18", "19" ]                        # ONLY TAKES MAJOR VERSION
+#        jdk-publisher: [ "corretto" ]
+#        gradle-version: [ "7.5.1", "7.6", "7.6.1", "8.0", "8.0.1", "8.0.2" ] # Do not work with java 19 - "7.4", "7.4.1", "7.5",
 #      fail-fast: false
-#    uses: benrhine/common-json-utils-jackson/.github/workflows/int-test.yml@main
+#    uses: ./.github/workflows/int-test.yml
 #    with:
 #      os: ${{ matrix.os }}
+#      java-version: ${{ matrix.java-version }}
+#      jdk-publisher: ${{ matrix.jdk-publisher }}
 #      gradle-version: ${{ matrix.gradle-version }}
-
-  macos-setup-gradle-environment:
-    if: github.event.pull_request.draft == false
-    strategy:
-      matrix:
-        os: [ macos-latest ]
-        gradle-version: [ "7.6", "7.6.1" ]
-      fail-fast: false
-    uses: benrhine/common-json-utils-jackson/.github/workflows/setup-gradle-environment.yml@main
-    with:
-      os: ${{ matrix.os }}
-      gradle-version: ${{ matrix.gradle-version }}
-
+#
+#  macos-setup-gradle-environment:
+#    if: github.event.pull_request.draft == false
+#    strategy:
+#      matrix:
+#        os: [ macos-latest ]
+#        java-version: [ "17", "18", "19" ]                        # ONLY TAKES MAJOR VERSION
+#        jdk-publisher: [ "corretto" ]
+#        gradle-version: [ "7.5.1", "7.6", "7.6.1", "8.0", "8.0.1", "8.0.2" ] # Do not work with java 19 - "7.4", "7.4.1", "7.5",
+#      fail-fast: false
+#    uses: ./.github/workflows/setup-gradle-environment.yml
+#    with:
+#      os: ${{ matrix.os }}
+#      java-version: ${{ matrix.java-version }}
+#      jdk-publisher: ${{ matrix.jdk-publisher }}
+#      gradle-version: ${{ matrix.gradle-version }}
+#
 #  macos-unit-test-gradle-environment:
 #    needs: macos-setup-gradle-environment
 #    strategy:
 #      matrix:
 #        os: [ macos-latest ]
-#        gradle-version: [ "7.6", "7.6.1" ]
+#        java-version: [ "17", "18", "19" ]                        # ONLY TAKES MAJOR VERSION
+#        jdk-publisher: [ "corretto" ]
+#        gradle-version: [ "7.5.1", "7.6", "7.6.1", "8.0", "8.0.1", "8.0.2" ] # Do not work with java 19 - "7.4", "7.4.1", "7.5",
 #      fail-fast: false
-#    uses: benrhine/common-json-utils-jackson/.github/workflows/unit-test.yml@main
+#    uses: ./.github/workflows/unit-test.yml
 #    with:
 #      os: ${{ matrix.os }}
+#      java-version: ${{ matrix.java-version }}
+#      jdk-publisher: ${{ matrix.jdk-publisher }}
 #      gradle-version: ${{ matrix.gradle-version }}
 #
 #  macos-int-test-gradle-environment:
@@ -141,9 +181,13 @@ jobs:
 #    strategy:
 #      matrix:
 #        os: [ macos-latest ]
-#        gradle-version: [ "7.6", "7.6.1" ]
+#        java-version: [ "17", "18", "19" ]                        # ONLY TAKES MAJOR VERSION
+#        jdk-publisher: [ "corretto" ]
+#        gradle-version: [ "7.5.1", "7.6", "7.6.1", "8.0", "8.0.1", "8.0.2" ] # Do not work with java 19 - "7.4", "7.4.1", "7.5",
 #      fail-fast: false
-#    uses: benrhine/common-json-utils-jackson/.github/workflows/int-test.yml@main
+#    uses: ./.github/workflows/int-test.yml
 #    with:
 #      os: ${{ matrix.os }}
+#      java-version: ${{ matrix.java-version }}
+#      jdk-publisher: ${{ matrix.jdk-publisher }}
 #      gradle-version: ${{ matrix.gradle-version }}
